@@ -1,0 +1,23 @@
+# 数据集（太大，不入库；报告里写明来源即可）
+data/chest_xray/
+data/val_original_16/
+
+# 模型权重
+models/*.pth
+
+# 本地安装包缓存（约 2.4GB，不入库）
+.wheels/
+
+# IDE 配置
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 系统文件
+.DS_Store
+Thumbs.db

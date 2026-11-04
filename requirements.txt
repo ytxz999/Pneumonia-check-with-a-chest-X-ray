@@ -1,0 +1,10 @@
+torch>=2.0
+torchvision>=0.15
+numpy>=2
+matplotlib
+scikit-learn
+pillow
+grad-cam
+gradio
+fastapi
+uvicorn
