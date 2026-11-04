@@ -1,10 +1,33 @@
-# 基于迁移学习与 Grad-CAM 的胸片肺炎检测系统
+<div align="center">
 
-> 《医学人工智能导论》课程项目 · 软件工程专业
+# 🩺 基于迁移学习与 Grad-CAM 的胸片肺炎检测系统
 
-一个完整的医学影像辅助诊断演示系统：输入胸部 X 光片，输出**正常 / 肺炎**的判断、置信概率，以及显示模型关注区域的 **Grad-CAM 可解释性热力图**，并提供网页 Demo 交互。
+《医学人工智能导论》课程项目 · 软件工程专业
 
-![Demo 截图](results/demo_screenshot.png)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C?logo=pytorch&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.1xx-009688?logo=fastapi&logoColor=white)
+![License](https://img.shields.io/badge/Status-课程项目-green)
+
+**输入胸部 X 光片 → 正常/肺炎判断 + 置信概率 + Grad-CAM 可解释性热力图**
+
+上传胸片，模型实时给出判断，并用热力图展示「它为什么这么判」。
+
+![UI 截图](results/ui_screenshot.png)
+
+</div>
+
+## 目录
+
+- [项目动机](#1-项目动机)
+- [数据集](#2-数据集)
+- [方法](#3-方法)
+- [实验结果](#4-实验结果)
+- [可解释性分析](#5-可解释性分析)
+- [快速开始](#6-快速开始)
+- [项目结构](#7-项目结构)
+- [局限性与伦理声明](#8-局限性与伦理声明model-card)
+- [未来工作](#9-未来工作)
 
 ## 1. 项目动机
 
@@ -22,14 +45,12 @@
 ## 3. 方法
 
 - **迁移学习**：ImageNet 预训练 ResNet18，替换最后的全连接层为 2 类输出，微调训练
-- **类别不平衡处理**：训练集中正常:肺炎 ≈ 1:3，采用逆频率加权交叉熵损失
+- **类别不平衡处理**：训练集中正常:肺炎 ≈ 1:3，采用逆频率加权交叉熵损失（权重 [1.94, 0.67]）
 - **差分学习率**：网络主体 lr=1e-4（保护预训练知识），新分类头 lr=1e-3
 - **数据增强**：随机水平翻转、±10° 旋转
 - **可解释性**：Grad-CAM 类激活热力图，可视化模型决策依据
 
 ## 4. 实验结果
-
-<!-- 训练完成后，把 results/metrics.json 的数字填进表格，并替换为你的实际图片 -->
 
 | 指标 | 数值 |
 |---|---|
@@ -87,8 +108,6 @@ python app/app.py
 **判定阈值滑块**（实时体验「漏诊 vs 误报」权衡）· Grad-CAM 热力图叠加浓度调节 ·
 环形置信度仪表盘 · 会话历史记录。
 
-![UI 截图](results/ui_screenshot.png)
-
 ## 7. 项目结构
 
 ```
@@ -99,10 +118,10 @@ pneumonia-detection/
 │   ├── train.py           # 迁移学习训练 + 评估
 │   └── gradcam.py         # Grad-CAM 可视化
 ├── app/
-│   ├── server.py           # FastAPI 后端（预测 + Grad-CAM API）
-│   ├── static/index.html   # 自研单页前端（暗色医疗风 UI）
-│   └── app.py              # Gradio 简易版 Demo（备选）
-├── models/                # 模型权重（不入库）
+│   ├── server.py          # FastAPI 后端（预测 + Grad-CAM API）
+│   ├── static/index.html  # 自研单页前端（暗色医疗风 UI）
+│   └── app.py             # Gradio 简易版 Demo（备选）
+├── models/                # 模型权重（不入库，运行 train.py 自动生成）
 ├── results/               # 指标、图表输出
 └── requirements.txt
 ```
