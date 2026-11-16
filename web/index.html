@@ -641,7 +641,8 @@
     x.scale(40, 40);                    // ±0.85 → ±34px
     ICONS[icon](x, 0.11, accent);       // lineWidth 也随缩放归一化
     x.restore();
-    // 标题
+    // 标题（所有文字以 W/2 为中心 —— canvas 默认 textAlign="start" 会整体偏右）
+    x.textAlign = "center";
     x.font = "800 44px 'Microsoft YaHei', sans-serif";
     x.fillStyle = "#e6edf7";
     x.fillText(title, W/2, 268);
