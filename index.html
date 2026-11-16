@@ -97,14 +97,17 @@
     70% { box-shadow: 0 0 0 9px rgba(52,211,153,0); }
     100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
   }
-  /* TechText 容器（canvas 需要显式高度，字号会在容器内自动收缩适配） */
+  /* TechText 容器（canvas 需要显式高度，字号会在容器内自动收缩适配）
+     注意: techtext.js 会给容器加 .tech-text 类（height:100%），其注入样式晚于本样式表，
+     同优先级下会覆盖此处 height —— 必须用 !important 锁住容器高度 */
   .tt-hero {
-    height: clamp(92px, 14.5vw, 156px); margin-top: 4px;
+    height: clamp(88px, 11vw, 118px) !important; margin-top: 2px;
     color: var(--txt); /* 描边/文字主色 */
     font-family: "Bahnschrift", "Microsoft YaHei", "PingFang SC", sans-serif;
   }
+  .tt-hero + .tt-hero { margin-top: 2px; }
   .tt-h2 {
-    height: 68px; margin: 0 auto; max-width: 560px;
+    height: 82px !important; margin: 0 auto; max-width: 640px;
     color: var(--txt);
     font-family: "Bahnschrift", "Microsoft YaHei", "PingFang SC", sans-serif;
   }
@@ -292,7 +295,7 @@
   .section-head .line { width: 62px; height: 3px; border-radius: 2px; margin: 16px auto 0;
     background: var(--grad); }
   .carousel-wrap {
-    height: 520px; position: relative; color: var(--txt);
+    height: 680px; position: relative; color: var(--txt);
   }
   .carousel-hint {
     position: absolute; top: 6px; left: 0; right: 0; text-align: center;
@@ -364,12 +367,20 @@
   <section class="hero">
     <div class="hero-badge"><span class="dot"></span>ResNet18 · ONNX 浏览器端推理 · 模型已就绪即测</div>
     <div data-techtext class="tt-hero"
-         data-text="AI 辅助胸片筛查，一秒给出参考判断"
+         data-text="AI 辅助胸片筛查"
          data-font-weight="800"
-         data-font-size="72"
+         data-font-size="112"
+         data-intro="type" data-intro-duration="1.2"
+         data-accent-color="#38d6e0"
+         data-letter-spacing="0"
+         data-specks="12"></div>
+    <div data-techtext class="tt-hero"
+         data-text="一秒给出参考判断"
+         data-font-weight="800"
+         data-font-size="112"
          data-intro="type" data-intro-duration="1.8"
          data-accent-color="#38d6e0"
-         data-letter-spacing="0.5"
+         data-letter-spacing="0"
          data-specks="12"></div>
     <p class="hero-desc">
       上传一张胸部 X 光片，深度学习模型在<b>你的浏览器本地</b>给出
@@ -475,10 +486,10 @@
     <div data-techtext class="tt-h2"
          data-text="技术架构"
          data-font-weight="800"
-         data-font-size="34"
+         data-font-size="42"
          data-intro="assemble" data-intro-duration="1.4"
          data-accent-color="#60a5fa"
-         data-letter-spacing="1"
+         data-letter-spacing="2"
          data-specks="10"></div>
     <div class="sub">从影像到判断 —— 六个环节串起完整流水线，全部在你的浏览器内</div>
     <div class="line"></div>
@@ -493,10 +504,10 @@
     <div data-techtext class="tt-h2"
          data-text="数据与实验"
          data-font-weight="800"
-         data-font-size="34"
+         data-font-size="42"
          data-intro="assemble" data-intro-duration="1.4"
          data-accent-color="#a78bfa"
-         data-letter-spacing="1"
+         data-letter-spacing="2"
          data-specks="10"></div>
     <div class="sub">广州妇女儿童医疗中心胸片 · 类别不平衡处理 · 筛查导向的指标取舍</div>
     <div class="line"></div>
@@ -539,6 +550,67 @@
 <script>
 /* ================= 技术架构 3D 环形轮播 ================= */
 (() => {
+  /* 简洁线性图标（canvas 手绘，线条风格统一） */
+  const ICONS = {
+    database(x, s, c) {  // 数据库：三层椭圆堆叠
+      x.lineWidth = s; x.strokeStyle = c; x.lineCap = "round";
+      for (const [dy, ry] of [[-0.55, 0.22], [0, 0.22], [0.55, 0.22]]) {
+        x.beginPath(); x.ellipse(0, dy * 0.9, 0.75, ry, 0, 0, Math.PI * 2); x.stroke();
+      }
+      x.beginPath(); x.moveTo(-0.75, -0.5 * 0.9); x.lineTo(-0.75, 0.4);
+      x.moveTo(0.75, -0.5 * 0.9); x.lineTo(0.75, 0.4); x.stroke();
+    },
+    network(x, s, c) {  // 神经网络：三层节点连线
+      x.lineWidth = s * 0.6; x.strokeStyle = c; x.lineCap = "round";
+      const L = [[-0.75, -0.4], [-0.75, 0.4]], M = [[0, -0.7], [0, 0], [0, 0.7]], R = [[0.75, -0.4], [0.75, 0.4]];
+      for (const a of L) for (const b of M) { x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke(); }
+      for (const b of M) for (const r of R) { x.beginPath(); x.moveTo(b[0], b[1]); x.lineTo(r[0], r[1]); x.stroke(); }
+      x.fillStyle = c;
+      for (const p of [...L, ...M, ...R]) { x.beginPath(); x.arc(p[0], p[1], s * 0.85, 0, Math.PI * 2); x.fill(); }
+    },
+    cube(x, s, c) {  // 立方体：等轴测三面
+      x.lineWidth = s; x.strokeStyle = c; x.lineJoin = "round";
+      const t = 0.72, b = 0.28, w = 0.78;
+      x.beginPath();  // 顶面
+      x.moveTo(0, -t); x.lineTo(w, -b); x.lineTo(0, 0.02); x.lineTo(-w, -b); x.closePath(); x.stroke();
+      x.beginPath();  // 两条竖棱 + 底边
+      x.moveTo(-w, -b); x.lineTo(-w, 0.45); x.lineTo(0, t);
+      x.moveTo(w, -b); x.lineTo(w, 0.45); x.lineTo(0, t);
+      x.moveTo(0, 0.02); x.lineTo(0, t); x.stroke();
+    },
+    bolt(x, s, c) {  // 闪电
+      x.lineWidth = s; x.strokeStyle = c; x.lineJoin = "round"; x.fillStyle = c + "33";
+      x.beginPath();
+      x.moveTo(0.1, -0.85); x.lineTo(-0.55, 0.1); x.lineTo(-0.05, 0.1);
+      x.lineTo(-0.2, 0.85); x.lineTo(0.55, -0.15); x.lineTo(0.02, -0.15);
+      x.closePath(); x.fill(); x.stroke();
+    },
+    flame(x, s, c) {  // 火焰
+      x.lineWidth = s; x.strokeStyle = c; x.fillStyle = c + "33"; x.lineJoin = "round";
+      x.beginPath();
+      x.moveTo(0, -0.85);
+      x.bezierCurveTo(0.55, -0.3, 0.62, 0.15, 0.42, 0.5);
+      x.bezierCurveTo(0.28, 0.75, -0.28, 0.75, -0.42, 0.5);
+      x.bezierCurveTo(-0.62, 0.15, -0.5, -0.35, -0.15, -0.7);
+      x.bezierCurveTo(-0.3, -0.2, -0.05, -0.1, 0, -0.85);
+      x.closePath(); x.fill(); x.stroke();
+      x.beginPath();  // 内焰
+      x.moveTo(0, 0.05);
+      x.bezierCurveTo(0.22, 0.3, 0.2, 0.55, 0, 0.68);
+      x.bezierCurveTo(-0.2, 0.55, -0.22, 0.3, 0, 0.05);
+      x.closePath(); x.fillStyle = c; x.fill();
+    },
+    monitor(x, s, c) {  // 显示器 + 诊断波形
+      x.lineWidth = s; x.strokeStyle = c; x.lineJoin = "round"; x.lineCap = "round";
+      x.strokeRect(-0.8, -0.7, 1.6, 1.05);
+      x.beginPath(); x.moveTo(0, 0.35); x.lineTo(0, 0.62);
+      x.moveTo(-0.42, 0.72); x.lineTo(0.42, 0.72); x.moveTo(0, 0.62); x.lineTo(0, 0.72); x.stroke();
+      x.beginPath();  // 屏内脉搏波形
+      x.moveTo(-0.6, -0.15); x.lineTo(-0.32, -0.15); x.lineTo(-0.22, -0.42);
+      x.lineTo(-0.08, 0.12); x.lineTo(0.04, -0.15); x.lineTo(0.6, -0.15); x.stroke();
+    },
+  };
+
   /* 程序化生成 6 张卡片图（深蓝科技风，无需外部图片资源） */
   function cardCanvas({ icon, title, en, lines, accent }) {
     const W = 480, H = 480;
@@ -560,11 +632,15 @@
     glow.addColorStop(0, accent + "2e"); glow.addColorStop(1, "transparent");
     x.fillStyle = glow; x.fillRect(0, 0, W, 360);
     // icon 圆盘
-    x.beginPath(); x.arc(W/2, 150, 62, 0, 7);
+    x.beginPath(); x.arc(W/2, 150, 72, 0, 7);
     x.fillStyle = accent + "1f"; x.fill();
     x.lineWidth = 2; x.strokeStyle = accent + "88"; x.stroke();
-    x.font = "58px serif"; x.textAlign = "center"; x.textBaseline = "middle";
-    x.fillText(icon, W/2, 154);
+    // 线性图标（归一化坐标 ±0.85，统一缩放到 68×68 区域）
+    x.save();
+    x.translate(W/2, 150);
+    x.scale(40, 40);                    // ±0.85 → ±34px
+    ICONS[icon](x, 0.11, accent);       // lineWidth 也随缩放归一化
+    x.restore();
     // 标题
     x.font = "800 44px 'Microsoft YaHei', sans-serif";
     x.fillStyle = "#e6edf7";
@@ -585,17 +661,17 @@
   }
 
   const items = [
-    { icon: "🏥", title: "数据构建", en: "DATA PIPELINE", accent: "#60a5fa",
+    { icon: "database", title: "数据构建", en: "DATA PIPELINE", accent: "#60a5fa",
       lines: ["Kaggle 胸片 5,856 张", "9:1 重切分 · seed=42", "逆频率加权抗 1:3 不平衡"] },
-    { icon: "🧠", title: "模型训练", en: "TRANSFER LEARNING", accent: "#38d6e0",
+    { icon: "network", title: "模型训练", en: "TRANSFER LEARNING", accent: "#38d6e0",
       lines: ["ResNet18 · ImageNet 预训练", "差分学习率 + 余弦退火", "按验证 Recall 保存最优"] },
-    { icon: "📦", title: "模型导出", en: "ONNX OPSET 17", accent: "#a78bfa",
+    { icon: "cube", title: "模型导出", en: "ONNX OPSET 17", accent: "#a78bfa",
       lines: ["torch.onnx.export 单文件", "输出偏差 < 1e-6", "42.6MB 跨平台运行"] },
-    { icon: "⚡", title: "浏览器推理", en: "ONNX RUNTIME WEB", accent: "#34d399",
+    { icon: "bolt", title: "浏览器推理", en: "ONNX RUNTIME WEB", accent: "#34d399",
       lines: ["WASM 本地推理 · 零上传", "预处理与训练严格一致", "单张推理 < 100ms"] },
-    { icon: "🔥", title: "可解释性", en: "GRAD-CAM", accent: "#f87171",
+    { icon: "flame", title: "可解释性", en: "GRAD-CAM", accent: "#f87171",
       lines: ["layer4 梯度加权热力图", "亮区覆盖肺部病灶", "证明模型学到病变特征"] },
-    { icon: "🖥️", title: "双端 Demo", en: "GRADIO + WEB", accent: "#fbbf24",
+    { icon: "monitor", title: "双端 Demo", en: "GRADIO + WEB", accent: "#fbbf24",
       lines: ["本地 Gradio 完整版", "在线静态版 · 隐私优先", "GitHub Pages 永久链接"] },
   ].map(it => ({ ...it, src: null }));  // src 延后填
 
@@ -606,7 +682,7 @@
     items,
     preset: "cylinder",
     intro: "rise",
-    cardWidth: 240,
+    cardWidth: 330,
     aspectRatio: 1,
     speed: 10,
     captions: true,
