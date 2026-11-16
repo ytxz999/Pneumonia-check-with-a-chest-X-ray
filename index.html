@@ -284,35 +284,20 @@
     padding: 4px 11px; border-radius: 999px; background: rgba(2,8,22,.74);
     border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(6px); }
 
-  /* ============ 技术架构节 ============ */
+  /* ============ 技术架构节（3D 环形轮播） ============ */
   .section-head { text-align: center; margin: 74px 0 30px; }
-  .section-head h2 { font-size: 27px; font-weight: 800; letter-spacing: 1px; }
   .section-head .sub { color: var(--txt-dim); font-size: 14px; margin-top: 10px; }
   .section-head .line { width: 62px; height: 3px; border-radius: 2px; margin: 16px auto 0;
     background: var(--grad); }
-  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-  @media (max-width: 880px) { .flow { grid-template-columns: repeat(2, 1fr); } }
-  .flow-card {
-    background: var(--card); border: 1px solid var(--card-border); border-radius: 17px;
-    padding: 24px 19px; text-align: center; backdrop-filter: blur(14px);
-    transition: all .3s; position: relative; overflow: hidden;
+  .carousel-wrap {
+    height: 520px; position: relative; color: var(--txt);
   }
-  .flow-card:hover { transform: translateY(-6px); border-color: rgba(96,165,250,.35);
-    box-shadow: 0 16px 36px rgba(2,8,22,.5); }
-  .flow-card .f-icon {
-    width: 52px; height: 52px; margin: 0 auto 13px; border-radius: 14px; font-size: 24px;
-    display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, rgba(79,142,247,.2), rgba(56,214,224,.16));
-    border: 1px solid rgba(96,165,250,.3);
+  .carousel-hint {
+    position: absolute; top: 6px; left: 0; right: 0; text-align: center;
+    font-size: 12px; color: var(--txt-faint); letter-spacing: 1px; pointer-events: none;
+    z-index: 5;
   }
-  .flow-card h3 { font-size: 15.5px; font-weight: 700; }
-  .flow-card p { color: var(--txt-dim); font-size: 12.5px; line-height: 1.75; margin-top: 9px; }
-  .flow-card .f-tag {
-    display: inline-block; margin-top: 11px; font-size: 11px; color: #8fd8e8;
-    border: 1px solid rgba(56,214,224,.3); border-radius: 999px; padding: 3px 11px;
-    background: rgba(56,214,224,.06);
-  }
-  .flow-arrow { display: flex; align-items: center; justify-content: center; color: #3d4f70; font-size: 20px; }
+  .carousel-hint b { color: #8fd8e8; }
 
   /* ============ 数据集节 ============ */
   .ds-grid { display: grid; grid-template-columns: 1.25fr 1fr; gap: 22px; align-items: stretch; }
@@ -492,37 +477,12 @@
          data-intro="assemble" data-intro-duration="1.4"
          data-accent-color="#60a5fa"
          data-specks="10"></div>
-    <div class="sub">从影像到判断，四步完成 —— 全部在你的浏览器内</div>
+    <div class="sub">从影像到判断 —— 六个环节串起完整流水线，全部在你的浏览器内</div>
     <div class="line"></div>
   </div>
-  <div class="flow reveal">
-    <div class="flow-card">
-      <div class="f-icon">🏥</div>
-      <h3>数据构建</h3>
-      <p>Kaggle 胸片数据集 5,856 张，按 9:1 重切分训练/验证集，逆频率加权应对 1:3 类别不平衡</p>
-      <div class="f-tag">Kaggle 公开数据</div>
-    </div>
-    <div class="flow-arrow">→</div>
-    <div class="flow-card">
-      <div class="f-icon">🧠</div>
-      <h3>模型训练</h3>
-      <p>ResNet18 ImageNet 迁移学习，差分学习率 + 余弦退火，按验证集召回率保存最优权重</p>
-      <div class="f-tag">PyTorch · 迁移学习</div>
-    </div>
-    <div class="flow-arrow">→</div>
-    <div class="flow-card">
-      <div class="f-icon">📦</div>
-      <h3>模型导出</h3>
-      <p>PyTorch 权重导出为 ONNX opset 17，与原模型输出偏差 &lt; 1e-6，可在任意浏览器运行</p>
-      <div class="f-tag">ONNX · opset 17</div>
-    </div>
-    <div class="flow-arrow">→</div>
-    <div class="flow-card">
-      <div class="f-icon">⚡</div>
-      <h3>浏览器推理</h3>
-      <p>onnxruntime-web 在本地完成 WASM 推理，图片不出本机；JS 预处理与训练流水线严格一致</p>
-      <div class="f-tag">WASM · 零服务器</div>
-    </div>
+  <div class="carousel-wrap reveal" id="techCarousel">
+    <div class="carousel-hint">🖱️ <b>拖拽旋转</b> · 自动漂移 · 点击卡片转到正面</div>
+    <div id="techRing" style="width:100%;height:100%"></div>
   </div>
 
   <!-- 数据集 -->
@@ -571,6 +531,87 @@
 </div>
 
 <script src="techtext.js"></script>
+<script src="circular-carousel.js"></script>
+<script>
+/* ================= 技术架构 3D 环形轮播 ================= */
+(() => {
+  /* 程序化生成 6 张卡片图（深蓝科技风，无需外部图片资源） */
+  function cardCanvas({ icon, title, en, lines, accent }) {
+    const W = 480, H = 480;
+    const c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    const x = c.getContext("2d");
+    // 背景
+    const bg = x.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, "#0d1830"); bg.addColorStop(1, "#070b16");
+    x.fillStyle = bg; x.fillRect(0, 0, W, H);
+    // 网格
+    x.strokeStyle = "rgba(96,165,250,.08)"; x.lineWidth = 1;
+    for (let i = 0; i <= W; i += 48) {
+      x.beginPath(); x.moveTo(i, 0); x.lineTo(i, H); x.stroke();
+      x.beginPath(); x.moveTo(0, i); x.lineTo(W, i); x.stroke();
+    }
+    // 光晕
+    const glow = x.createRadialGradient(W/2, 150, 20, W/2, 150, 190);
+    glow.addColorStop(0, accent + "2e"); glow.addColorStop(1, "transparent");
+    x.fillStyle = glow; x.fillRect(0, 0, W, 360);
+    // icon 圆盘
+    x.beginPath(); x.arc(W/2, 150, 62, 0, 7);
+    x.fillStyle = accent + "1f"; x.fill();
+    x.lineWidth = 2; x.strokeStyle = accent + "88"; x.stroke();
+    x.font = "58px serif"; x.textAlign = "center"; x.textBaseline = "middle";
+    x.fillText(icon, W/2, 154);
+    // 标题
+    x.font = "800 44px 'Microsoft YaHei', sans-serif";
+    x.fillStyle = "#e6edf7";
+    x.fillText(title, W/2, 268);
+    // 英文副标
+    x.font = "500 19px Consolas, monospace";
+    x.fillStyle = accent;
+    x.fillText(en, W/2, 306);
+    // 分割线
+    const lg = x.createLinearGradient(90, 0, W-90, 0);
+    lg.addColorStop(0, "transparent"); lg.addColorStop(.5, accent + "aa"); lg.addColorStop(1, "transparent");
+    x.fillStyle = lg; x.fillRect(90, 336, W-180, 2);
+    // 要点
+    x.font = "400 21px 'Microsoft YaHei', sans-serif";
+    x.fillStyle = "rgba(142,160,189,.95)";
+    lines.forEach((t, i) => x.fillText(t, W/2, 376 + i * 36));
+    return c.toDataURL("image/png");
+  }
+
+  const items = [
+    { icon: "🏥", title: "数据构建", en: "DATA PIPELINE", accent: "#60a5fa",
+      lines: ["Kaggle 胸片 5,856 张", "9:1 重切分 · seed=42", "逆频率加权抗 1:3 不平衡"] },
+    { icon: "🧠", title: "模型训练", en: "TRANSFER LEARNING", accent: "#38d6e0",
+      lines: ["ResNet18 · ImageNet 预训练", "差分学习率 + 余弦退火", "按验证 Recall 保存最优"] },
+    { icon: "📦", title: "模型导出", en: "ONNX OPSET 17", accent: "#a78bfa",
+      lines: ["torch.onnx.export 单文件", "输出偏差 < 1e-6", "42.6MB 跨平台运行"] },
+    { icon: "⚡", title: "浏览器推理", en: "ONNX RUNTIME WEB", accent: "#34d399",
+      lines: ["WASM 本地推理 · 零上传", "预处理与训练严格一致", "单张推理 < 100ms"] },
+    { icon: "🔥", title: "可解释性", en: "GRAD-CAM", accent: "#f87171",
+      lines: ["layer4 梯度加权热力图", "亮区覆盖肺部病灶", "证明模型学到病变特征"] },
+    { icon: "🖥️", title: "双端 Demo", en: "GRADIO + WEB", accent: "#fbbf24",
+      lines: ["本地 Gradio 完整版", "在线静态版 · 隐私优先", "GitHub Pages 永久链接"] },
+  ].map(it => ({ ...it, src: null }));  // src 延后填
+
+  const ring = document.getElementById("techRing");
+  // 先生成图片再创建轮播
+  items.forEach(it => { it.src = cardCanvas(it); });
+  TechCarousel.create(ring, {
+    items,
+    preset: "cylinder",
+    intro: "rise",
+    cardWidth: 240,
+    aspectRatio: 1,
+    speed: 10,
+    captions: true,
+    fadeColor: "#070b16",
+    cornerRadius: 16,
+    depthFade: 0.6
+  });
+})();
+</script>
 <script>
 /* ================= 背景：极光粒子点阵 ================= */
 (() => {
