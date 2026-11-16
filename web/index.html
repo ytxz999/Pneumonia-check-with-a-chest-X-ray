@@ -99,12 +99,14 @@
   }
   /* TechText 容器（canvas 需要显式高度，字号会在容器内自动收缩适配） */
   .tt-hero {
-    height: clamp(78px, 12vw, 128px); margin-top: 4px;
+    height: clamp(92px, 14.5vw, 156px); margin-top: 4px;
     color: var(--txt); /* 描边/文字主色 */
+    font-family: "Bahnschrift", "Microsoft YaHei", "PingFang SC", sans-serif;
   }
   .tt-h2 {
-    height: 56px; margin: 0 auto; max-width: 520px;
+    height: 68px; margin: 0 auto; max-width: 560px;
     color: var(--txt);
+    font-family: "Bahnschrift", "Microsoft YaHei", "PingFang SC", sans-serif;
   }
   .hero-desc {
     color: var(--txt-dim); font-size: 16.5px; line-height: 1.9; max-width: 640px;
@@ -364,10 +366,10 @@
     <div data-techtext class="tt-hero"
          data-text="AI 辅助胸片筛查，一秒给出参考判断"
          data-font-weight="800"
-         data-font-size="56"
+         data-font-size="72"
          data-intro="type" data-intro-duration="1.8"
          data-accent-color="#38d6e0"
-         data-letter-spacing="0"
+         data-letter-spacing="0.5"
          data-specks="12"></div>
     <p class="hero-desc">
       上传一张胸部 X 光片，深度学习模型在<b>你的浏览器本地</b>给出
@@ -473,9 +475,10 @@
     <div data-techtext class="tt-h2"
          data-text="技术架构"
          data-font-weight="800"
-         data-font-size="27"
+         data-font-size="34"
          data-intro="assemble" data-intro-duration="1.4"
          data-accent-color="#60a5fa"
+         data-letter-spacing="1"
          data-specks="10"></div>
     <div class="sub">从影像到判断 —— 六个环节串起完整流水线，全部在你的浏览器内</div>
     <div class="line"></div>
@@ -490,9 +493,10 @@
     <div data-techtext class="tt-h2"
          data-text="数据与实验"
          data-font-weight="800"
-         data-font-size="27"
+         data-font-size="34"
          data-intro="assemble" data-intro-duration="1.4"
          data-accent-color="#a78bfa"
+         data-letter-spacing="1"
          data-specks="10"></div>
     <div class="sub">广州妇女儿童医疗中心胸片 · 类别不平衡处理 · 筛查导向的指标取舍</div>
     <div class="line"></div>
