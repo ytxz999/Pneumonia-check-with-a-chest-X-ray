@@ -97,18 +97,14 @@
     70% { box-shadow: 0 0 0 9px rgba(52,211,153,0); }
     100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
   }
-  .hero-title {
-    font-size: clamp(34px, 5.6vw, 56px); font-weight: 800; line-height: 1.22;
-    letter-spacing: 1px; min-height: 1.25em;
+  /* TechText 容器（canvas 需要显式高度，字号会在容器内自动收缩适配） */
+  .tt-hero {
+    height: clamp(78px, 12vw, 128px); margin-top: 4px;
+    color: var(--txt); /* 描边/文字主色 */
   }
-  .hero-title .char { display: inline-block; opacity: 0; animation: charIn .5s ease forwards; }
-  @keyframes charIn {
-    from { opacity: 0; transform: translateY(26px) rotate(5deg) scale(.92); filter: blur(6px); }
-    to   { opacity: 1; transform: none; filter: blur(0); }
-  }
-  .hero-title .grad {
-    background: var(--grad);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
+  .tt-h2 {
+    height: 56px; margin: 0 auto; max-width: 520px;
+    color: var(--txt);
   }
   .hero-desc {
     color: var(--txt-dim); font-size: 16.5px; line-height: 1.9; max-width: 640px;
@@ -380,7 +376,14 @@
   <!-- Hero -->
   <section class="hero">
     <div class="hero-badge"><span class="dot"></span>ResNet18 · ONNX 浏览器端推理 · 模型已就绪即测</div>
-    <h1 class="hero-title" id="heroTitle" data-text="AI 辅助胸片筛查，一秒给出参考判断"></h1>
+    <div data-techtext class="tt-hero"
+         data-text="AI 辅助胸片筛查，一秒给出参考判断"
+         data-font-weight="800"
+         data-font-size="56"
+         data-intro="type" data-intro-duration="1.8"
+         data-accent-color="#38d6e0"
+         data-letter-spacing="0"
+         data-specks="12"></div>
     <p class="hero-desc">
       上传一张胸部 X 光片，深度学习模型在<b>你的浏览器本地</b>给出
       <b>正常 / 肺炎</b> 判断与置信概率 —— 全程无需上传图片，隐私不出本机。
@@ -481,8 +484,14 @@
   </div>
 
   <!-- 技术架构 -->
-  <div class="section-head reveal" id="tech">
-    <h2>技术架构</h2>
+   <div class="section-head reveal" id="tech">
+    <div data-techtext class="tt-h2"
+         data-text="技术架构"
+         data-font-weight="800"
+         data-font-size="27"
+         data-intro="assemble" data-intro-duration="1.4"
+         data-accent-color="#60a5fa"
+         data-specks="10"></div>
     <div class="sub">从影像到判断，四步完成 —— 全部在你的浏览器内</div>
     <div class="line"></div>
   </div>
@@ -518,7 +527,13 @@
 
   <!-- 数据集 -->
   <div class="section-head reveal" id="data">
-    <h2>数据与实验</h2>
+    <div data-techtext class="tt-h2"
+         data-text="数据与实验"
+         data-font-weight="800"
+         data-font-size="27"
+         data-intro="assemble" data-intro-duration="1.4"
+         data-accent-color="#a78bfa"
+         data-specks="10"></div>
     <div class="sub">广州妇女儿童医疗中心胸片 · 类别不平衡处理 · 筛查导向的指标取舍</div>
     <div class="line"></div>
   </div>
@@ -555,6 +570,7 @@
   </footer>
 </div>
 
+<script src="techtext.js"></script>
 <script>
 /* ================= 背景：极光粒子点阵 ================= */
 (() => {
@@ -608,20 +624,6 @@
     requestAnimationFrame(tick);
   }
   tick();
-})();
-
-/* ================= Hero 逐字浮现 ================= */
-(() => {
-  const el = document.getElementById("heroTitle");
-  const text = el.dataset.text;
-  // 「一秒给出参考判断」加渐变色
-  const gradStart = text.indexOf("一秒给出参考判断");
-  let html = "";
-  for (let i = 0; i < text.length; i++) {
-    const cls = gradStart >= 0 && i >= gradStart ? "char grad" : "char";
-    html += `<span class="${cls}" style="animation-delay:${0.18 + i * 0.055}s">${text[i]}</span>`;
-  }
-  el.innerHTML = html;
 })();
 
 /* ================= 滚动渐显 ================= */
