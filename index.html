@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>胸片肺炎智能检测 · 在线体验</title>
+<style>
+  :root {
+    --bg-0: #0b1220; --bg-1: #101a2e; --card: rgba(255,255,255,.045);
+    --card-border: rgba(255,255,255,.09); --txt: #e6edf7; --txt-dim: #8ea0bd;
+    --blue: #4f8ef7; --cyan: #38d6e0; --green: #34d399; --red: #f87171;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+    background:
+      radial-gradient(1000px 600px at 12% -10%, rgba(79,142,247,.16), transparent 60%),
+      radial-gradient(900px 550px at 95% 0%, rgba(56,214,224,.10), transparent 55%),
+      linear-gradient(165deg, var(--bg-0), var(--bg-1));
+    color: var(--txt); min-height: 100vh;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 30px 22px 46px; }
+
+  header { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+  .logo {
+    width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+    background: linear-gradient(135deg, #2563eb, #38d6e0);
+    display: flex; align-items: center; justify-content: center; font-size: 26px;
+    box-shadow: 0 6px 22px rgba(37,99,235,.4);
+  }
+  header h1 { font-size: 22.5px; letter-spacing: .5px; }
+  header .sub { color: var(--txt-dim); font-size: 13px; margin-top: 3px; }
+  .back { margin-left: auto; }
+  .back a {
+    color: var(--cyan); text-decoration: none; font-size: 13.5px;
+    padding: 8px 16px; border-radius: 999px; border: 1px solid var(--card-border);
+    background: var(--card); transition: all .18s;
+  }
+  .back a:hover { border-color: var(--cyan); }
+
+  .banner {
+    border: 1px solid rgba(56,214,224,.25); border-radius: 12px;
+    background: rgba(56,214,224,.06); padding: 11px 16px; font-size: 13px;
+    color: var(--txt-dim); margin-bottom: 24px; line-height: 1.6;
+  }
+  .banner b { color: var(--cyan); }
+
+  .grid { display: grid; grid-template-columns: 430px 1fr; gap: 20px; }
+  @media (max-width: 940px) { .grid { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 18px; padding: 22px; backdrop-filter: blur(14px);
+    box-shadow: 0 10px 34px rgba(2,8,22,.35);
+  }
+  .panel-title {
+    font-size: 14.5px; font-weight: 700; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+  }
+  .panel-title .bar { width: 4px; height: 16px; border-radius: 2px;
+    background: linear-gradient(180deg, var(--blue), var(--cyan)); }
+
+  .drop {
+    border: 1.6px dashed rgba(143,163,191,.4); border-radius: 14px;
+    padding: 32px 18px; text-align: center; cursor: pointer;
+    transition: all .22s ease; background: rgba(255,255,255,.02);
+  }
+  .drop:hover, .drop.over { border-color: var(--blue); background: rgba(79,142,247,.08); }
+  .drop .icon { font-size: 38px; margin-bottom: 8px; }
+  .drop .t1 { font-size: 15px; font-weight: 600; }
+  .drop .t2 { color: var(--txt-dim); font-size: 12.5px; margin-top: 6px; }
+  #fileInput { display: none; }
+
+  .samples { display: flex; gap: 9px; margin-top: 14px; }
+  .sample-btn {
+    flex: 1; padding: 8px; border-radius: 10px; cursor: pointer; font-size: 12.5px;
+    background: rgba(255,255,255,.04); border: 1px solid var(--card-border);
+    color: var(--txt-dim); transition: all .18s; text-align: center;
+  }
+  .sample-btn:hover { color: var(--txt); border-color: var(--blue); }
+  .sample-btn img { width: 100%; height: 58px; object-fit: cover; border-radius: 7px; margin-bottom: 6px; }
+
+  .ctrl { margin-top: 16px; }
+  .ctrl-label { display: flex; justify-content: space-between; font-size: 13px;
+    color: var(--txt-dim); margin-bottom: 8px; }
+  .ctrl-label b { color: var(--txt); font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; appearance: none; height: 5px; border-radius: 3px;
+    background: linear-gradient(90deg, var(--cyan), var(--blue)); outline: none; }
+  input[type=range]::-webkit-slider-thumb {
+    appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--blue); cursor: pointer;
+  }
+  .hint { font-size: 11.5px; color: #64748b; margin-top: 6px; line-height: 1.5; }
+
+  #analyzeBtn {
+    width: 100%; margin-top: 18px; padding: 14px; border: none; border-radius: 12px;
+    font-size: 16.5px; font-weight: 700; letter-spacing: 6px; color: #fff; cursor: pointer;
+    background: linear-gradient(90deg, #2563eb, #38bdf8);
+    box-shadow: 0 8px 26px rgba(37,99,235,.38); transition: all .2s;
+  }
+  #analyzeBtn:hover { transform: translateY(-2px); }
+  #analyzeBtn:disabled { opacity: .55; cursor: wait; transform: none; }
+
+  .status-line { margin-top: 12px; font-size: 12.5px; color: var(--txt-dim);
+    text-align: center; min-height: 18px; }
+  .status-line .ok { color: var(--green); }
+
+  .empty { min-height: 460px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; color: #55688a; gap: 12px; }
+  .empty .big { font-size: 50px; opacity: .5; }
+
+  .verdict {
+    display: none; align-items: center; gap: 16px; padding: 18px 22px;
+    border-radius: 15px; margin-bottom: 18px; animation: slideIn .45s ease;
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-9px); } to { opacity: 1; } }
+  .verdict.pneu { background: linear-gradient(90deg, rgba(248,113,113,.16), rgba(248,113,113,.05));
+    border: 1px solid rgba(248,113,113,.35); }
+  .verdict.norm { background: linear-gradient(90deg, rgba(52,211,153,.15), rgba(52,211,153,.05));
+    border: 1px solid rgba(52,211,153,.35); }
+  .verdict .v-icon { font-size: 34px; }
+  .verdict .v-main { font-size: 19px; font-weight: 800; }
+  .verdict.pneu .v-main { color: var(--red); }
+  .verdict.norm .v-main { color: var(--green); }
+  .verdict .v-sub { font-size: 12.5px; color: var(--txt-dim); margin-top: 4px; }
+
+  .result-grid { display: grid; grid-template-columns: 230px 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 720px) { .result-grid { grid-template-columns: 1fr; } }
+
+  .gauge-wrap { position: relative; width: 200px; height: 200px; margin: 4px auto 2px; }
+  .gauge-wrap svg { transform: rotate(-90deg); }
+  .gauge-bg { fill: none; stroke: rgba(255,255,255,.07); stroke-width: 15; }
+  .gauge-fg { fill: none; stroke-width: 15; stroke-linecap: round;
+    transition: stroke-dashoffset 1s cubic-bezier(.22,1,.36,1); }
+  .gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; }
+  .gauge-center .num { font-size: 35px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .gauge-center .cap { font-size: 12.5px; color: var(--txt-dim); margin-top: 2px; }
+
+  .bars .row { margin-bottom: 14px; }
+  .bars .row-head { display: flex; justify-content: space-between; font-size: 13.5px; margin-bottom: 7px; }
+  .bars .row-head b { font-variant-numeric: tabular-nums; }
+  .bar-track { height: 10px; background: rgba(255,255,255,.06); border-radius: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 6px; width: 0; transition: width 1s cubic-bezier(.22,1,.36,1); }
+  .bar-fill.norm { background: linear-gradient(90deg, #10b981, #34d399); }
+  .bar-fill.pneu { background: linear-gradient(90deg, #ef4444, #f87171); }
+  .meta-line { font-size: 12px; color: #64748b; margin-top: 14px; line-height: 1.7; }
+
+  .img-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .img-card { position: relative; border-radius: 13px; overflow: hidden;
+    border: 1px solid var(--card-border); background: #060a14; }
+  .img-card img { width: 100%; display: block; aspect-ratio: 1; object-fit: cover; }
+  .img-card .tag { position: absolute; top: 10px; left: 10px; font-size: 11.5px;
+    padding: 4px 11px; border-radius: 999px; background: rgba(2,8,22,.72);
+    border: 1px solid rgba(255,255,255,.14); }
+
+  footer { margin-top: 26px; text-align: center; font-size: 12px; color: #55688a; line-height: 1.7; }
+  footer b { color: #8ea0bd; }
+
+  .spinner { display: none; width: 40px; height: 40px; border-radius: 50%;
+    border: 4px solid rgba(255,255,255,.1); border-top-color: var(--blue);
+    animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">🩻</div>
+    <div>
+      <h1>胸片肺炎智能检测 · 在线体验</h1>
+      <div class="sub">ResNet18 · ONNX 推理全程在你的浏览器中运行，图片不会上传到任何服务器</div>
+    </div>
+    <div class="back"><a href="https://github.com/ytxz999/Pneumonia-check-with-a-chest-X-ray">← 返回 GitHub</a></div>
+  </header>
+
+  <div class="banner">
+    🔒 <b>隐私安全</b>：本页面为纯静态应用，模型（ONNX 格式，约 43MB，首次加载需等待片刻）下载到你的浏览器后，
+    所有推理计算均在本地完成，<b>上传的图片不会被发送到任何服务器</b>。在线版不含 Grad-CAM 热力图，
+    完整版（热力图 + GPU 加速）请参照仓库 README 本地运行。
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="panel-title"><span class="bar"></span>影像输入</div>
+      <div class="drop" id="drop">
+        <div class="icon">🖼️</div>
+        <div class="t1">拖拽图片到这里，或点击上传</div>
+        <div class="t2">支持 JPG / PNG · 胸部 X 光片</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*">
+
+      <div class="samples">
+        <div class="sample-btn" id="sNorm"><img id="s1" alt="正常示例"><div>示例 · 正常</div></div>
+        <div class="sample-btn" id="sPneu"><img id="s2" alt="肺炎示例"><div>示例 · 肺炎</div></div>
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-label"><span>判定阈值（肺炎概率 ≥）</span><b id="thVal">0.50</b></div>
+        <input type="range" id="threshold" min="0.05" max="0.95" step="0.05" value="0.5">
+        <div class="hint">调低 → 更容易判为肺炎（漏诊更少、误报更多）；调高则相反。对应医学筛查「漏诊代价 &gt; 误报代价」的权衡。</div>
+      </div>
+
+      <button id="analyzeBtn">开始分析</button>
+      <div class="status-line" id="status">模型加载中…</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><span class="bar"></span>分析结果</div>
+
+      <div class="empty" id="empty">
+        <div class="big">🔬</div>
+        <div id="emptyTxt">等待模型加载后即可开始</div>
+        <div class="spinner" id="spinner"></div>
+      </div>
+
+      <div id="result" style="display:none">
+        <div class="verdict" id="verdict">
+          <div class="v-icon" id="vIcon"></div>
+          <div>
+            <div class="v-main" id="vMain"></div>
+            <div class="v-sub" id="vSub"></div>
+          </div>
+        </div>
+
+        <div class="result-grid">
+          <div>
+            <div class="gauge-wrap">
+              <svg width="200" height="200">
+                <circle class="gauge-bg" cx="100" cy="100" r="84"></circle>
+                <circle class="gauge-fg" id="gaugeArc" cx="100" cy="100" r="84"></circle>
+              </svg>
+              <div class="gauge-center">
+                <div class="num" id="gaugeNum">--%</div>
+                <div class="cap">肺炎概率</div>
+              </div>
+            </div>
+            <div class="bars" style="margin-top:18px">
+              <div class="row">
+                <div class="row-head"><span>正常 NORMAL</span><b id="pn" style="color:var(--green)">--</b></div>
+                <div class="bar-track"><div class="bar-fill norm" id="bn"></div></div>
+              </div>
+              <div class="row">
+                <div class="row-head"><span>肺炎 PNEUMONIA</span><b id="pp" style="color:var(--red)">--</b></div>
+                <div class="bar-track"><div class="bar-fill pneu" id="bp"></div></div>
+              </div>
+            </div>
+            <div class="meta-line" id="meta"></div>
+          </div>
+
+          <div class="img-grid">
+            <div class="img-card"><span class="tag">原图（224×224 输入）</span><img id="imgIn" alt="输入图"></div>
+            <div class="img-card"><span class="tag">灰度归一化输入</span><img id="imgGray" alt="预处理图"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    ⚠️ <b>免责声明</b>：本页面为课程教学演示，基于公开数据集（Kaggle Chest X-Ray Images）训练，
+    不能用于真实医疗诊断，健康判断请以专业医师意见为准。<br>
+    模型：ResNet18（迁移学习） · 测试集 Recall 99.7% ·
+    <a href="https://github.com/ytxz999/Pneumonia-check-with-a-chest-X-ray" style="color:var(--cyan)">GitHub 仓库</a>
+  </footer>
+</div>
+
+<script>
+/* ONNX Runtime Web —— 从 unpkg CDN 加载（jsdelivr 在部分网络环境不可达） */
+const $ = id => document.getElementById(id);
+const MODEL_URL = "model.onnx";   // 同目录相对路径
+const ORT_BASE = "https://unpkg.com/onnxruntime-web@1.20.1/dist/";
+const MEAN = [0.485, 0.456, 0.406];
+const STD  = [0.229, 0.224, 0.225];
+
+let ort = null;
+let session = null;
+let currentImg = null;      // HTMLImageElement
+let currentDataUrl = null;
+
+/* ---------- 模型加载 ---------- */
+async function loadModel() {
+  try {
+    $("status").textContent = "正在下载模型（约 43MB，首次需要片刻）…";
+    ort = await import(ORT_BASE + "ort.min.mjs");
+    ort.env.wasm.wasmPaths = ORT_BASE;   // 告诉 runtime 去 CDN 取 .wasm 二进制
+    session = await ort.InferenceSession.create(MODEL_URL,
+      { executionProviders: ["wasm"], graphOptimizationLevel: "all" });
+    $("status").innerHTML = '<span class="ok">✅ 模型就绪（WASM 推理）</span> · 输入 224×224 · 二分类 ResNet18';
+    $("emptyTxt").textContent = "上传胸片后点击「开始分析」";
+  } catch (e) {
+    $("status").innerHTML = '<span style="color:var(--red)">模型加载失败，请检查网络后刷新重试</span>';
+    console.error(e);
+  }
+}
+loadModel();
+
+/* ---------- 上传交互 ---------- */
+const drop = $("drop"), fileInput = $("fileInput");
+drop.onclick = () => fileInput.click();
+drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
+drop.ondragleave = () => drop.classList.remove("over");
+drop.ondrop = e => {
+  e.preventDefault(); drop.classList.remove("over");
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+};
+fileInput.onchange = () => { if (fileInput.files[0]) loadFile(fileInput.files[0]); };
+
+function loadFile(f) {
+  const r = new FileReader();
+  r.onload = e => setImage(e.target.result);
+  r.readAsDataURL(f);
+}
+function setImage(dataUrl) {
+  const img = new Image();
+  img.onload = () => {
+    currentImg = img; currentDataUrl = dataUrl;
+    $("imgIn").src = dataUrl;
+    $("imgGray").src = dataUrl;
+    $("empty").style.display = "none";
+    $("result").style.display = "block";
+    $("verdict").style.display = "none";
+    $("gaugeNum").textContent = "--%";
+  };
+  img.src = dataUrl;
+}
+
+/* ---------- 示例（静态文件，与页面同目录） ---------- */
+$("sNorm").onclick = () => setImage("samples/normal.jpg");
+$("sPneu").onclick = () => setImage("samples/pneumonia.jpg");
+// 示例缩略图
+$("s1").src = "samples/normal_thumb.jpg";
+$("s2").src = "samples/pneumonia_thumb.jpg";
+
+/* ---------- 预处理：与训练完全一致 ---------- */
+function preprocess(img) {
+  // 1) resize 到 224×224（双线性）
+  const c1 = document.createElement("canvas");
+  c1.width = c1.height = 224;
+  const ctx1 = c1.getContext("2d");
+  ctx1.drawImage(img, 0, 0, 224, 224);
+
+  // 2) 灰度化（Rec.601 亮度公式，与 torchvision Grayscale 一致）
+  const d1 = ctx1.getImageData(0, 0, 224, 224).data;
+  const gray = new Float32Array(224 * 224);
+  for (let i = 0; i < gray.length; i++) {
+    gray[i] = 0.299 * d1[i*4] + 0.587 * d1[i*4+1] + 0.114 * d1[i*4+2];
+  }
+
+  // 3) 灰度复制 3 通道 + /255 + Normalize
+  const data = new Float32Array(3 * 224 * 224);
+  for (let i = 0, px = 0; i < gray.length; i++, px++) {
+    const v = gray[i] / 255.0;
+    for (let ch = 0; ch < 3; ch++) {
+      data[ch * 224 * 224 + i] = (v - MEAN[ch]) / STD[ch];
+    }
+  }
+  return new ort.Tensor("float32", data, [1, 3, 224, 224]);
+}
+
+/* ---------- 分析 ---------- */
+$("threshold").oninput = e => $("thVal").textContent = (+e.target.value).toFixed(2);
+$("threshold").onchange = () => { if (lastProbs) render(lastProbs); };
+
+let lastProbs = null;
+$("analyzeBtn").onclick = async () => {
+  if (!session) { alert("模型尚未加载完成，请稍候"); return; }
+  if (!currentImg) { alert("请先上传或选择一张示例胸片"); return; }
+  $("analyzeBtn").disabled = true;
+  $("spinner").style.display = "block";
+  try {
+    const t0 = performance.now();
+    const input = preprocess(currentImg);
+    const feeds = { input };
+    const results = await session.run(feeds);
+    const logits = results.logits.data;
+    const maxL = Math.max(logits[0], logits[1]);
+    const e0 = Math.exp(logits[0] - maxL), e1 = Math.exp(logits[1] - maxL);
+    const sum = e0 + e1;
+    lastProbs = [e0 / sum, e1 / sum];
+    const ms = Math.round(performance.now() - t0);
+    $("meta").innerHTML = `⚙ WASM 推理耗时 <b>${ms} ms</b>（你的浏览器） · ResNet18 · ONNX opset 17`;
+    render(lastProbs);
+  } catch (e) {
+    alert("推理出错: " + e.message);
+    console.error(e);
+  } finally {
+    $("analyzeBtn").disabled = false;
+    $("spinner").style.display = "none";
+  }
+};
+
+function render(probs) {
+  const th = +$("threshold").value;
+  const pneu = probs[1] >= th;
+  $("verdict").style.display = "flex";
+  $("verdict").className = "verdict " + (pneu ? "pneu" : "norm");
+  $("vIcon").textContent = pneu ? "🔴" : "🟢";
+  $("vMain").textContent = pneu
+    ? `检测到肺炎征象（肺炎概率 ${(probs[1]*100).toFixed(1)}%）`
+    : `未见明显肺炎征象（正常概率 ${(probs[0]*100).toFixed(1)}%）`;
+  $("vSub").textContent = `判定阈值 ${th.toFixed(2)} · 仅供课程演示参考`;
+
+  const C = 2 * Math.PI * 84;
+  $("gaugeArc").style.strokeDasharray = C;
+  $("gaugeArc").style.strokeDashoffset = C * (1 - probs[1]);
+  $("gaugeArc").style.stroke = pneu ? "#f87171" : "#34d399";
+  $("gaugeNum").textContent = (probs[1]*100).toFixed(1) + "%";
+  $("gaugeNum").style.color = pneu ? "var(--red)" : "var(--green)";
+
+  $("pn").textContent = (probs[0]*100).toFixed(1) + "%";
+  $("pp").textContent = (probs[1]*100).toFixed(1) + "%";
+  $("bn").style.width = (probs[0]*100) + "%";
+  $("bp").style.width = (probs[1]*100) + "%";
+}
+</script>
+</body>
+</html>
