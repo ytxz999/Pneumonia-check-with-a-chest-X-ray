@@ -9,6 +9,13 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.1xx-009688?logo=fastapi&logoColor=white)
 ![License](https://img.shields.io/badge/Status-课程项目-green)
 
+### 🌐 在线体验（无需安装任何东西）
+
+**👉 [点击这里直接在浏览器中测试](https://ytxz999.github.io/Pneumonia-check-with-a-chest-X-ray/)** 👈
+
+纯静态网页 + ONNX 浏览器端推理：模型下载到你的浏览器后本地运行，**上传的图片不会离开你的电脑**。
+在线版提供概率判断与阈值调节；Grad-CAM 热力图请参照下方本地版运行。
+
 **输入胸部 X 光片 → 正常/肺炎判断 + 置信概率 + Grad-CAM 可解释性热力图**
 
 上传胸片，模型实时给出判断，并用热力图展示「它为什么这么判」。
